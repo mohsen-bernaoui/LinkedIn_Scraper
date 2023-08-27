@@ -11,7 +11,7 @@ import os
 def create_null_column_csv():
     
     empty_data = [None]
-    empty_df = pd.DataFrame({'Salaire': empty_data})
+    empty_df = pd.DataFrame(empty_data)
     empty_df.to_csv('empty.csv', index=False)
 
 #############################
@@ -71,16 +71,14 @@ def salaryPD(content):
             output.write(head.get_text('span').replace('span','\n').replace('USD','\n'))
 
 
-    if os.path.getsize('salary.csv') == 0:
-        return True
-        
-    else :
+    try :
         df=pd.read_fwf('salary.csv')
-
+    except pd.errors.EmptyDataError:
+        return create_null_column_csv()
+    else:
         odd_df = df.iloc[::2].reset_index(drop=True)
         even_df = df.iloc[1::2].reset_index(drop=True)
 
-    
         df=even_df+' '+odd_df
         df.to_csv('salary.csv',index=None)
 
@@ -91,7 +89,7 @@ def salaryPD(content):
 def main():
 
 #############################
-    file='Data/General.html'
+    file='Data/emploi.html'
     with open(file, 'r', encoding='utf-8') as file:
         content = file.read()
         
@@ -115,52 +113,35 @@ def main():
         
 #############################
     df1 = pd.read_csv('titre.csv')
-    try:
+    if len(df1.columns) > 1:
         df1.drop(df1.columns[1], axis=1, inplace=True)
-    except IndexError:
-        True
 
     df2 = pd.read_csv('company.csv')
-    try:
+    if len(df2.columns) > 1:
         df2.drop(df2.columns[1], axis=1, inplace=True)
-    except IndexError:
-        True
-        
+
     df3 = pd.read_csv('location.csv')
-    try:
+    if len(df3.columns) > 1:
         df3.drop(df3.columns[1], axis=1, inplace=True)
-    except IndexError:
-        True
 
     df4 = pd.read_csv('day.csv')
-    try:
+    if len(df4.columns) > 1:
         df4.drop(df4.columns[1], axis=1, inplace=True)
-    except IndexError:
-        True
 
-    if os.stat('salary.csv')==0:
-        # mch sur mel == aamel aaliha tala mb3d ,ken tji erreur mb3 fel sal (feragh wala maabi raw mnha)
-        df5 = pd.read_csv('salary.csv')
-        try:
-            df5.drop(df5.columns[1], axis=1, inplace=True)
-        except IndexError:
-            True
-    else :
-        os.remove('salary.csv')
-    df5 = pd.read_csv('salary.csv')
-
-#############################
-    df1.columns = ['Titre']
-    df2.columns = ['societe']
-    df3.columns = ['location']
-    df4.columns = ['jour']
     try:
-        df5.columns = ['salaire']
-    except FileNotFoundError as e:
-        bf5=create_null_column_csv()
+        df5 = pd.read_csv('salary.csv')
+    except pd.errors.EmptyDataError:
+        result_df = pd.concat([df1, df2, df3, df4], axis=1)
+        result_df.columns = ['Titre', 'Societe', 'Location', 'Jour']
+    else:
+        if len(df5.columns) > 0: 
+            result_df = pd.concat([df1, df2, df3, df4, df5], axis=1)
+            result_df.columns = ['Titre', 'Societe', 'Location', 'Jour', 'Salaire']
+    
 
-#############################
-    result_df = pd.concat([df1, df2, df3, df4, df5], axis=1)
+    
+
+
 
 #############################
     os.remove('company.csv')
@@ -168,6 +149,7 @@ def main():
     os.remove('location.csv')
     os.remove('titre.csv')
     os.remove('salary.csv')
+
     
     try:
         os.remove('empty.csv')
@@ -178,6 +160,7 @@ def main():
 
 
     result_df.to_csv('merged_file.csv', index=False)
+    os.remove('merged_file.csv')
     result_df.to_excel('merged_file.xlsx',index=False)
 
 #############################
