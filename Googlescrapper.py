@@ -2,7 +2,6 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import os
 
-# Define a function to create an empty CSV file
 def create_empty_csv(file_name):
     df = pd.DataFrame(columns=['Placeholder'])
     df.to_csv(file_name, index=False)
@@ -55,8 +54,8 @@ def main():
     os.remove('difficulties.csv')
 
     # Save the concatenated DataFrame to CSV and Excel
-    result_df.to_csv('merged_file.csv', index=False)
-    result_df.to_excel('merged_file.xlsx', index=False)
+    # result_df.to_csv('google_jobs.csv', index=False)
+    result_df.to_excel('google_jobs.xlsx', index=False)
 
 if __name__ == "__main__":
     main()
